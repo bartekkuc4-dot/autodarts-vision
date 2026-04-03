@@ -152,7 +152,7 @@ const GameScreen = ({
           </div>
         )}
 
-        <ManualScorer onScore={handleScore} />
+        <ManualScorer onScore={handleScore} playerName={state.players[state.activePlayerIndex].name} />
         <Scoreboard
           players={scoreboardPlayers}
           currentRound={state.currentRound}
