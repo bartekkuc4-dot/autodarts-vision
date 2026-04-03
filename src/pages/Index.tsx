@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Header from "@/components/Header";
 import CameraView from "@/components/CameraView";
 import Scoreboard from "@/components/Scoreboard";
@@ -8,6 +8,15 @@ import GameSetup, { type GameConfig } from "@/components/GameSetup";
 import ManualScorer from "@/components/ManualScorer";
 import WinnerOverlay from "@/components/WinnerOverlay";
 import { useGameEngine } from "@/hooks/useGameEngine";
+import {
+  playHitSound,
+  playBustSound,
+  playWinSound,
+  announceThrow,
+  announceBust,
+  announceWinner,
+  announceNextPlayer,
+} from "@/lib/sounds";
 
 interface Detection {
   id: number;
@@ -26,10 +35,47 @@ const GameScreen = ({
 }) => {
   const { state, addThrow, undo, nextPlayer, resetGame } = useGameEngine(config);
   const [detections, setDetections] = useState<Detection[]>([]);
+  const prevActiveIdx = useRef(state.activePlayerIndex);
+  const prevWinner = useRef(state.winner);
+
+  // React to game state changes for sounds
+  useEffect(() => {
+    // Winner
+    if (state.winner && state.winner !== prevWinner.current) {
+      playWinSound();
+      announceWinner(state.winner);
+    }
+    prevWinner.current = state.winner;
+
+    // Bust
+    if (state.bustMessage && state.lastAction === "throw") {
+      playBustSound();
+      announceBust(state.players[state.activePlayerIndex].name);
+    }
+
+    // Player changed (not from bust – bust already announced)
+    if (state.activePlayerIndex !== prevActiveIdx.current && !state.bustMessage && !state.winner) {
+      announceNextPlayer(state.players[state.activePlayerIndex].name);
+    }
+    prevActiveIdx.current = state.activePlayerIndex;
+  }, [state]);
 
   const handleScore = useCallback(
     (segment: string, points: number) => {
+      // Get current player before state update
+      const currentPlayer = state.players[state.activePlayerIndex];
+      const newScore = currentPlayer.score - points;
+
       addThrow(segment, points);
+
+      // Play hit sound
+      playHitSound(points);
+
+      // Announce (only if not bust — bust will be announced via useEffect)
+      if (newScore >= 0 && !(newScore === 1) && !(newScore === 0 && config.doubleOut && !segment.startsWith("D"))) {
+        announceThrow(segment, points, Math.max(0, newScore));
+      }
+
       const now = new Date();
       const ts = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
       setDetections((prev) => [
@@ -37,7 +83,7 @@ const GameScreen = ({
         ...prev,
       ]);
     },
-    [addThrow]
+    [addThrow, state.players, state.activePlayerIndex, config.doubleOut]
   );
 
   const handleUndo = useCallback(() => {
@@ -68,7 +114,7 @@ const GameScreen = ({
 
         {/* Bust message */}
         {state.bustMessage && (
-          <div className="rounded-lg border border-accent/40 bg-accent/10 px-4 py-2.5 text-center">
+          <div className="rounded-lg border border-accent/40 bg-accent/10 px-4 py-2.5 text-center animate-in shake duration-300">
             <span className="font-display text-sm font-bold uppercase tracking-wider text-accent">
               {state.bustMessage}
             </span>
