@@ -1,136 +1,83 @@
 import { useState } from "react";
-import { Calculator, X, Delete } from "lucide-react";
-
-const SEGMENTS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
-
-type Multiplier = "S" | "D" | "T";
+import { Undo2 } from "lucide-react";
 
 interface ManualScorerProps {
   onScore: (segment: string, points: number) => void;
+  playerName?: string;
 }
 
-const ManualScorer = ({ onScore }: ManualScorerProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [multiplier, setMultiplier] = useState<Multiplier>("S");
+const ManualScorer = ({ onScore, playerName }: ManualScorerProps) => {
+  const [input, setInput] = useState("");
 
-  const getLabel = (m: Multiplier) => {
-    switch (m) {
-      case "S": return "Single";
-      case "D": return "Double";
-      case "T": return "Triple";
-    }
+  const handleDigit = (d: string) => {
+    if (input.length < 3) setInput((prev) => prev + d);
   };
 
-  const handleSegment = (seg: number) => {
-    const points = seg * (multiplier === "D" ? 2 : multiplier === "T" ? 3 : 1);
-    const label = `${multiplier}${seg}`;
-    onScore(label, points);
-    setMultiplier("S");
+  const handleBackspace = () => {
+    setInput((prev) => prev.slice(0, -1));
   };
 
-  const handleBull = (double: boolean) => {
-    onScore(double ? "D-Bull" : "S-Bull", double ? 50 : 25);
-    setMultiplier("S");
+  const handleSubmit = () => {
+    const val = parseInt(input, 10);
+    if (isNaN(val) || val < 0) return;
+    // We submit as a single "score entry" — segment label is the raw number
+    onScore(`${val}`, val);
+    setInput("");
   };
-
-  const handleMiss = () => {
-    onScore("Miss", 0);
-  };
-
-  if (!isOpen) {
-    return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="glass-surface rounded-lg p-3 w-full flex items-center justify-center gap-2 hover:bg-secondary/60 transition-colors"
-      >
-        <Calculator className="w-4 h-4 text-primary" />
-        <span className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground">
-          Kalkulator ręczny
-        </span>
-      </button>
-    );
-  }
 
   return (
-    <div className="glass-surface rounded-lg p-3 space-y-3">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Calculator className="w-4 h-4 text-primary" />
-          <span className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground">
-            Kalkulator ręczny
-          </span>
-        </div>
-        <button onClick={() => setIsOpen(false)} className="p-1 rounded hover:bg-secondary transition-colors">
-          <X className="w-4 h-4 text-muted-foreground" />
+    <div className="space-y-3">
+      {/* "It's your turn" label */}
+      {playerName && (
+        <p className="font-display text-sm font-bold uppercase tracking-wider text-primary">
+          Twoja kolej, {playerName}!
+        </p>
+      )}
+
+      {/* Input + Submit row */}
+      <div className="flex items-center gap-2 bg-secondary/60 rounded-full p-1.5 pl-4">
+        <input
+          type="text"
+          inputMode="none"
+          readOnly
+          value={input}
+          placeholder="Wpisz wynik"
+          className="flex-1 bg-transparent text-foreground font-display text-base font-semibold outline-none placeholder:text-muted-foreground/50"
+        />
+        <button
+          onClick={handleSubmit}
+          disabled={!input}
+          className="px-6 py-2.5 rounded-full bg-primary text-primary-foreground font-display text-sm font-bold uppercase tracking-wider transition-all disabled:opacity-40 hover:brightness-110"
+        >
+          Zatwierdź
         </button>
       </div>
 
-      {/* Multiplier selector */}
-      <div className="grid grid-cols-3 gap-1.5">
-        {(["S", "D", "T"] as Multiplier[]).map((m) => (
+      {/* Numpad grid */}
+      <div className="grid grid-cols-3 divide-x divide-y divide-border/30 border border-border/30 rounded-lg overflow-hidden">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
           <button
-            key={m}
-            onClick={() => setMultiplier(m)}
-            className={`py-2 rounded-lg text-xs font-display font-bold uppercase tracking-wider transition-all ${
-              multiplier === m
-                ? m === "T"
-                  ? "bg-accent/20 text-accent border border-accent/40"
-                  : m === "D"
-                    ? "bg-primary/20 text-primary border border-primary/40"
-                    : "bg-secondary text-foreground border border-border"
-                : "bg-muted/30 text-muted-foreground hover:bg-secondary/60"
-            }`}
+            key={n}
+            onClick={() => handleDigit(String(n))}
+            className="py-4 text-center font-display text-xl font-bold text-foreground hover:bg-secondary/60 active:bg-secondary transition-colors"
           >
-            {getLabel(m)}
+            {n}
           </button>
         ))}
-      </div>
-
-      {/* Number grid */}
-      <div className="grid grid-cols-5 gap-1.5">
-        {SEGMENTS.map((seg) => {
-          const pts = seg * (multiplier === "D" ? 2 : multiplier === "T" ? 3 : 1);
-          return (
-            <button
-              key={seg}
-              onClick={() => handleSegment(seg)}
-              className="relative flex flex-col items-center justify-center py-2.5 rounded-lg bg-secondary/60 hover:bg-secondary transition-colors"
-            >
-              <span className="font-display text-sm font-bold text-foreground">{seg}</span>
-              <span className={`text-[9px] font-body tabular-nums ${
-                multiplier === "T" ? "text-accent" : multiplier === "D" ? "text-primary" : "text-muted-foreground"
-              }`}>
-                ={pts}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Bull & Miss row */}
-      <div className="grid grid-cols-3 gap-1.5">
+        {/* Bottom row: undo, 0, empty */}
         <button
-          onClick={() => handleBull(false)}
-          className="flex flex-col items-center py-2.5 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors"
+          onClick={handleBackspace}
+          className="py-4 flex items-center justify-center hover:bg-secondary/60 active:bg-secondary transition-colors"
         >
-          <span className="font-display text-xs font-bold text-primary">Bull</span>
-          <span className="text-[9px] text-muted-foreground font-body">=25</span>
+          <Undo2 className="w-5 h-5 text-muted-foreground" />
         </button>
         <button
-          onClick={() => handleBull(true)}
-          className="flex flex-col items-center py-2.5 rounded-lg bg-accent/10 hover:bg-accent/20 transition-colors"
+          onClick={() => handleDigit("0")}
+          className="py-4 text-center font-display text-xl font-bold text-foreground hover:bg-secondary/60 active:bg-secondary transition-colors"
         >
-          <span className="font-display text-xs font-bold text-accent">D-Bull</span>
-          <span className="text-[9px] text-muted-foreground font-body">=50</span>
+          0
         </button>
-        <button
-          onClick={handleMiss}
-          className="flex flex-col items-center justify-center py-2.5 rounded-lg bg-muted/50 hover:bg-secondary transition-colors"
-        >
-          <Delete className="w-4 h-4 text-muted-foreground" />
-          <span className="font-display text-[9px] font-bold text-muted-foreground uppercase">Miss</span>
-        </button>
+        <div />
       </div>
     </div>
   );
