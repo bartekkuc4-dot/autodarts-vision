@@ -135,7 +135,7 @@ const GameSetup = ({ onStart }: GameSetupProps) => {
         )}
 
         {/* Double Out toggle (only for X01 modes) */}
-        {mode.label !== "Cricket" && (
+        {(
           <div className="glass-surface rounded-lg p-4 flex items-center justify-between">
             <div>
               <p className="text-sm font-display font-semibold text-foreground">Double Out</p>
