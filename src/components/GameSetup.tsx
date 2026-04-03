@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Target, Users, Play, Plus, Minus, Trophy, Zap, CircleDot, SlidersHorizontal } from "lucide-react";
+import { Target, Users, Play, Plus, Minus, Trophy, Zap, SlidersHorizontal } from "lucide-react";
 
 export interface GameConfig {
   mode: string;
