@@ -164,7 +164,8 @@ export function useGameEngine(config: GameConfig) {
       if (prev.winner) return prev;
 
       const player = prev.players[prev.activePlayerIndex];
-      const finalPlayer = { ...player, roundThrows: [], rounds: player.rounds + 1 };
+      const roundScore = player.roundThrows.reduce((s, t) => s + t.points, 0);
+      const finalPlayer = { ...player, roundThrows: [], rounds: player.rounds + 1, lastRoundScore: roundScore };
       const players = [...prev.players];
       players[prev.activePlayerIndex] = finalPlayer;
 
