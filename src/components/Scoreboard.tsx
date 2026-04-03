@@ -1,4 +1,4 @@
-import { Trophy, RotateCcw } from "lucide-react";
+import { Trophy, TrendingUp } from "lucide-react";
 
 interface Player {
   name: string;
@@ -6,6 +6,8 @@ interface Player {
   legsWon: number;
   throws: number[];
   isActive: boolean;
+  totalThrows: number;
+  totalPoints: number;
 }
 
 interface ScoreboardProps {
@@ -70,28 +72,41 @@ const Scoreboard = ({ players, currentRound, currentLeg, totalLegs, gameMode }: 
               </span>
             </div>
 
-            {/* Last throws */}
-            <div className="flex gap-1.5">
-              {player.throws.map((t, i) => (
-                <div
-                  key={i}
-                  className={`w-8 h-8 rounded flex items-center justify-center text-xs font-display font-bold ${
-                    t >= 50
-                      ? "bg-accent/20 text-accent"
-                      : t >= 20
-                      ? "bg-primary/15 text-primary"
-                      : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {t}
+            {/* Last throws + avg */}
+            <div className="flex items-center justify-between">
+              <div className="flex gap-1.5">
+                {player.throws.map((t, i) => (
+                  <div
+                    key={i}
+                    className={`w-8 h-8 rounded flex items-center justify-center text-xs font-display font-bold ${
+                      t >= 50
+                        ? "bg-accent/20 text-accent"
+                        : t >= 20
+                        ? "bg-primary/15 text-primary"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {t}
+                  </div>
+                ))}
+                {Array.from({ length: Math.max(0, 3 - player.throws.length) }).map((_, i) => (
+                  <div
+                    key={`empty-${i}`}
+                    className="w-8 h-8 rounded bg-muted/50 border border-border/30"
+                  />
+                ))}
+              </div>
+
+              {/* Live average */}
+              {player.totalThrows > 0 && (
+                <div className="flex items-center gap-1 bg-muted/40 rounded px-2 py-1">
+                  <TrendingUp className="w-3 h-3 text-primary" />
+                  <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">Śr.</span>
+                  <span className="font-display text-sm font-bold tabular-nums text-primary">
+                    {((player.totalPoints / player.totalThrows) * 3).toFixed(1)}
+                  </span>
                 </div>
-              ))}
-              {Array.from({ length: Math.max(0, 3 - player.throws.length) }).map((_, i) => (
-                <div
-                  key={`empty-${i}`}
-                  className="w-8 h-8 rounded bg-muted/50 border border-border/30"
-                />
-              ))}
+              )}
             </div>
           </div>
         ))}

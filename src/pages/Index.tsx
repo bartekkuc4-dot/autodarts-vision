@@ -118,6 +118,8 @@ const GameScreen = ({
     legsWon: p.legsWon,
     throws: p.roundThrows.map((t) => t.points),
     isActive: i === state.activePlayerIndex,
+    totalThrows: p.totalThrows,
+    totalPoints: config.startingScore - p.score + p.roundThrows.reduce((s, t) => s + t.points, 0),
   }));
 
   const modeLabel = config.mode + (config.doubleOut ? " Double Out" : "");
