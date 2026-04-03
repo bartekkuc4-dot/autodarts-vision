@@ -84,7 +84,7 @@ const GameSetup = ({ onStart }: GameSetupProps) => {
           <label className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground">
             Tryb gry
           </label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {GAME_MODES.map((m, i) => (
               <button
                 key={m.label}
