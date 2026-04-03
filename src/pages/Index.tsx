@@ -92,12 +92,10 @@ const GameScreen = ({
 
   const handleUndo = useCallback(() => {
     undo();
-    setDetections([]); // keep for compat
   }, [undo]);
 
   const handlePlayAgain = useCallback(() => {
     resetGame();
-    setDetections([]);
   }, [resetGame]);
 
 
