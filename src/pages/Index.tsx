@@ -86,12 +86,6 @@ const GameScreen = ({
         announceThrow(segment, points, Math.max(0, newScore));
       }
 
-      const now = new Date();
-      const ts = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
-      setDetections((prev) => [
-        { id: Date.now(), segment, score: points, confidence: 1.0, timestamp: ts },
-        ...prev,
-      ]);
     },
     [addThrow, state.players, state.activePlayerIndex, config.doubleOut]
   );
