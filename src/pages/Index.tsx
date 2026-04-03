@@ -18,13 +18,7 @@ import {
   announceNextPlayer,
 } from "@/lib/sounds";
 
-interface Detection {
-  id: number;
-  segment: string;
-  score: number;
-  confidence: number;
-  timestamp: string;
-}
+
 
 const GameScreen = ({
   config,
