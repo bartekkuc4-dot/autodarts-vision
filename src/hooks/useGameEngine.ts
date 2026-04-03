@@ -1,11 +1,25 @@
 import { useCallback, useState } from "react";
 import type { GameConfig } from "@/components/GameSetup";
 
+export interface ThrowData {
+  segment: string;
+  points: number;
+}
+
+export interface RoundHistoryEntry {
+  leg: number;
+  round: number;
+  playerName: string;
+  throws: ThrowData[];
+  totalPoints: number;
+  bust: boolean;
+}
+
 export interface PlayerState {
   name: string;
   score: number;
   legsWon: number;
-  roundThrows: { segment: string; points: number }[];
+  roundThrows: ThrowData[];
   totalThrows: number;
   rounds: number;
 }
@@ -21,6 +35,7 @@ export interface GameState {
   config: GameConfig;
   lastAction: "throw" | "undo" | "next" | "leg_won" | null;
   bustMessage: string | null;
+  roundHistory: RoundHistoryEntry[];
 }
 
 export function useGameEngine(config: GameConfig) {
