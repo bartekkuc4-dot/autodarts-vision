@@ -3,6 +3,7 @@ import { Trophy, RotateCcw } from "lucide-react";
 interface Player {
   name: string;
   score: number;
+  legsWon: number;
   throws: number[];
   isActive: boolean;
 }
@@ -10,6 +11,8 @@ interface Player {
 interface ScoreboardProps {
   players: Player[];
   currentRound: number;
+  currentLeg: number;
+  totalLegs: number;
   gameMode: string;
 }
 
