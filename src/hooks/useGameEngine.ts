@@ -56,6 +56,15 @@ export function useGameEngine(config: GameConfig) {
           newScore === 1 ||
           (newScore === 0 && prev.config.doubleOut && !isDouble)
         ) {
+          const bustEntry: RoundHistoryEntry = {
+            leg: prev.currentLeg,
+            round: prev.currentRound,
+            playerName: player.name,
+            throws: [...player.roundThrows, { segment, points }],
+            totalPoints: player.roundThrows.reduce((s, t) => s + t.points, 0) + points,
+            bust: true,
+          };
+
           const revertedPlayer: PlayerState = {
             ...player,
             score: player.score + player.roundThrows.reduce((s, t) => s + t.points, 0),
@@ -76,6 +85,7 @@ export function useGameEngine(config: GameConfig) {
             lastAction: "throw",
             bustMessage: `BUST! ${player.name} wraca do ${revertedPlayer.score}`,
             legWinner: null,
+            roundHistory: [...prev.roundHistory, bustEntry],
           };
         }
 
