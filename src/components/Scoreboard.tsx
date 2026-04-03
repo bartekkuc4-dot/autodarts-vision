@@ -1,4 +1,4 @@
-import { Trophy, TrendingUp } from "lucide-react";
+import { Trophy } from "lucide-react";
 
 interface Player {
   name: string;
