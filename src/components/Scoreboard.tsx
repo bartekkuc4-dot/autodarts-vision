@@ -6,6 +6,8 @@ interface Player {
   legsWon: number;
   throws: number[];
   isActive: boolean;
+  totalThrows: number;
+  totalPoints: number;
 }
 
 interface ScoreboardProps {
