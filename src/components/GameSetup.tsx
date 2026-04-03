@@ -114,6 +114,29 @@ const GameSetup = ({ onStart }: GameSetupProps) => {
           </div>
         </div>
 
+        {/* Custom score slider */}
+        {mode.label === "Własne" && (
+          <div className="glass-surface rounded-lg p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-display font-semibold text-foreground">Wynik startowy</p>
+              <span className="font-display text-lg font-bold text-primary neon-text-glow tabular-nums">{customScore}</span>
+            </div>
+            <input
+              type="range"
+              min={101}
+              max={901}
+              step={1}
+              value={customScore}
+              onChange={(e) => setCustomScore(Number(e.target.value))}
+              className="w-full h-2 rounded-full appearance-none cursor-pointer bg-secondary accent-primary [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-lg"
+            />
+            <div className="flex justify-between text-[10px] text-muted-foreground font-body">
+              <span>101</span>
+              <span>901</span>
+            </div>
+          </div>
+        )}
+
         {/* Double Out toggle (only for X01 modes) */}
         {mode.label !== "Cricket" && (
           <div className="glass-surface rounded-lg p-4 flex items-center justify-between">
