@@ -1,103 +1,142 @@
 import { Camera, Video, VideoOff } from "lucide-react";
-import { useState, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const CameraView = () => {
   const [isActive, setIsActive] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
+  const stopCamera = useCallback(() => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.srcObject = null;
+    }
+
+    setIsActive(false);
+    setIsStarting(false);
+  }, []);
+
   const startCamera = useCallback(async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setError("Ta przeglądarka nie obsługuje kamery.");
+      return;
+    }
+
     try {
+      setIsStarting(true);
       setError(null);
+      stopCamera();
+
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 960 } },
+        video: {
+          facingMode: { ideal: "environment" },
+          width: { ideal: 1280 },
+          height: { ideal: 960 },
+        },
         audio: false,
       });
+
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+
+      if (!videoRef.current) {
+        throw new Error("Brak elementu video.");
       }
+
+      videoRef.current.srcObject = stream;
+      await videoRef.current.play();
+
       setIsActive(true);
     } catch (err) {
-      console.error("Camera error:", err);
-      setError("Nie udało się uruchomić kamery. Sprawdź uprawnienia.");
-    }
-  }, []);
+      stopCamera();
 
-  const stopCamera = useCallback(() => {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    streamRef.current = null;
-    if (videoRef.current) videoRef.current.srcObject = null;
-    setIsActive(false);
-  }, []);
+      const message = err instanceof Error && err.name === "NotAllowedError"
+        ? "Dostęp do kamery został zablokowany. Zezwól na kamerę lub otwórz aplikację w nowej karcie."
+        : err instanceof Error && err.name === "NotFoundError"
+          ? "Nie znaleziono kamery na tym urządzeniu."
+          : "Nie udało się uruchomić kamery. Sprawdź uprawnienia przeglądarki.";
+
+      console.error("Camera error:", err);
+      setError(message);
+    } finally {
+      setIsStarting(false);
+    }
+  }, [stopCamera]);
+
+  useEffect(() => {
+    return () => stopCamera();
+  }, [stopCamera]);
 
   return (
-    <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden border border-border bg-muted/30">
-      {/* Live video element (always mounted, hidden when inactive) */}
+    <div className="relative w-full aspect-[4/3] overflow-hidden rounded-lg border border-border bg-muted/30">
       <video
         ref={videoRef}
         autoPlay
         playsInline
         muted
-        className={`absolute inset-0 w-full h-full object-cover ${isActive ? "block" : "hidden"}`}
+        className={`absolute inset-0 h-full w-full object-cover ${isActive ? "block" : "hidden"}`}
       />
 
       {isActive && (
         <>
-          {/* Grid overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/60 pointer-events-none" />
-          <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none">
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/60" />
+          <div className="pointer-events-none absolute inset-0 grid grid-cols-3 grid-rows-3">
             {Array.from({ length: 9 }).map((_, i) => (
               <div key={i} className="border border-primary/10" />
             ))}
           </div>
-          {/* Dartboard detection zone */}
-          <div className="absolute inset-8 border-2 border-primary/40 rounded-full animate-pulse-neon pointer-events-none" />
-          <div className="absolute inset-16 border border-primary/20 rounded-full pointer-events-none" />
-          {/* Status */}
-          <div className="absolute top-4 left-4 flex items-center gap-2 glass-surface rounded-full px-3 py-1.5">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse-neon" />
-            <span className="text-xs font-display font-semibold text-primary uppercase tracking-wider">Live</span>
+          <div className="pointer-events-none absolute inset-8 rounded-full border-2 border-primary/40 animate-pulse-neon" />
+          <div className="pointer-events-none absolute inset-16 rounded-full border border-primary/20" />
+          <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full px-3 py-1.5 glass-surface">
+            <div className="h-2 w-2 rounded-full bg-primary animate-pulse-neon" />
+            <span className="text-xs font-display font-semibold uppercase tracking-wider text-primary">Live</span>
           </div>
-          <div className="absolute top-4 right-4 glass-surface rounded-full px-3 py-1.5">
-            <span className="text-xs font-display font-semibold text-muted-foreground uppercase tracking-wider">Wykrywanie...</span>
+          <div className="absolute right-4 top-4 rounded-full px-3 py-1.5 glass-surface">
+            <span className="text-xs font-display font-semibold uppercase tracking-wider text-muted-foreground">Wykrywanie...</span>
           </div>
         </>
       )}
 
       {!isActive && !error && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-          <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center">
-            <Camera className="w-10 h-10 text-muted-foreground" />
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-secondary">
+            <Camera className="h-10 w-10 text-muted-foreground" />
           </div>
-          <p className="text-sm text-muted-foreground font-body">Kliknij aby uruchomić kamerę</p>
+          <p className="font-body text-sm text-muted-foreground">
+            {isStarting ? "Uruchamianie kamery..." : "Kliknij aby uruchomić kamerę"}
+          </p>
         </div>
       )}
 
       {error && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6">
-          <div className="w-20 h-20 rounded-full bg-destructive/20 flex items-center justify-center">
-            <VideoOff className="w-10 h-10 text-destructive" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6 text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-destructive/20">
+            <VideoOff className="h-10 w-10 text-destructive" />
           </div>
-          <p className="text-sm text-destructive text-center font-body">{error}</p>
+          <p className="font-body text-sm text-destructive">{error}</p>
         </div>
       )}
 
-      {/* Camera toggle button */}
       <button
         onClick={isActive ? stopCamera : startCamera}
-        className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 glass-surface rounded-full px-6 py-2.5 flex items-center gap-2 hover:bg-secondary/80 transition-colors"
+        disabled={isStarting}
+        className="glass-surface absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full px-6 py-2.5 transition-colors hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isActive ? (
           <>
-            <VideoOff className="w-4 h-4 text-accent" />
+            <VideoOff className="h-4 w-4 text-accent" />
             <span className="text-sm font-display font-semibold text-accent">Zatrzymaj</span>
           </>
         ) : (
           <>
-            <Video className="w-4 h-4 text-primary" />
-            <span className="text-sm font-display font-semibold text-primary">Uruchom kamerę</span>
+            <Video className="h-4 w-4 text-primary" />
+            <span className="text-sm font-display font-semibold text-primary">
+              {isStarting ? "Łączenie..." : "Uruchom kamerę"}
+            </span>
           </>
         )}
       </button>
