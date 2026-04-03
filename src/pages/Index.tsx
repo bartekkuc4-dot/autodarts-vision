@@ -6,6 +6,7 @@ import GameControls from "@/components/GameControls";
 import DetectionLog from "@/components/DetectionLog";
 import GameSetup, { type GameConfig } from "@/components/GameSetup";
 import ManualScorer from "@/components/ManualScorer";
+import RoundHistory from "@/components/RoundHistory";
 import WinnerOverlay from "@/components/WinnerOverlay";
 import { useGameEngine } from "@/hooks/useGameEngine";
 import {
