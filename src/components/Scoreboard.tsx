@@ -51,11 +51,18 @@ const Scoreboard = ({ players, currentRound, currentLeg, totalLegs, gameMode }: 
             }`}
           >
             <div className="flex items-center justify-between mb-2">
-              <span className={`font-display font-bold text-sm uppercase tracking-wide ${
-                player.isActive ? "text-primary neon-text-glow" : "text-secondary-foreground"
-              }`}>
-                {player.name}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className={`font-display font-bold text-sm uppercase tracking-wide ${
+                  player.isActive ? "text-primary neon-text-glow" : "text-secondary-foreground"
+                }`}>
+                  {player.name}
+                </span>
+                {totalLegs > 1 && (
+                  <span className="text-[10px] font-display font-bold text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
+                    {player.legsWon}L
+                  </span>
+                )}
+              </div>
               <span className={`font-display font-bold text-3xl tabular-nums ${
                 player.isActive ? "text-foreground animate-score-pop" : "text-secondary-foreground"
               }`}>
