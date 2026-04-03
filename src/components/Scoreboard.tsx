@@ -97,16 +97,28 @@ const Scoreboard = ({ players, currentRound, currentLeg, totalLegs, gameMode }: 
                 ))}
               </div>
 
-              {/* Live average */}
-              {player.totalThrows > 0 && (
-                <div className="flex items-center gap-1 bg-muted/40 rounded px-2 py-1">
-                  <TrendingUp className="w-3 h-3 text-primary" />
-                  <span className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider">Śr.</span>
-                  <span className="font-display text-sm font-bold tabular-nums text-primary">
-                    {((player.totalPoints / player.totalThrows) * 3).toFixed(1)}
-                  </span>
-                </div>
-              )}
+            </div>
+
+            {/* Stats rows */}
+            <div className="mt-2 space-y-0.5 text-sm font-body">
+              <div className="flex justify-between">
+                <span className={player.isActive ? "text-foreground/70" : "text-muted-foreground"}>Śr. 3 rzuty</span>
+                <span className={`font-display font-bold tabular-nums ${player.isActive ? "text-foreground" : "text-secondary-foreground"}`}>
+                  {player.totalThrows > 0 ? ((player.totalPoints / player.totalThrows) * 3).toFixed(2) : "0.00"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className={player.isActive ? "text-foreground/70" : "text-muted-foreground"}>Ostatni wynik</span>
+                <span className={`font-display font-bold tabular-nums ${player.isActive ? "text-foreground" : "text-secondary-foreground"}`}>
+                  {player.lastRoundScore !== null ? player.lastRoundScore : "-"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className={player.isActive ? "text-foreground/70" : "text-muted-foreground"}>Rzuty</span>
+                <span className={`font-display font-bold tabular-nums ${player.isActive ? "text-foreground" : "text-secondary-foreground"}`}>
+                  {player.totalThrows}
+                </span>
+              </div>
             </div>
           </div>
         ))}
