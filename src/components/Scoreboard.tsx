@@ -16,7 +16,7 @@ interface ScoreboardProps {
   gameMode: string;
 }
 
-const Scoreboard = ({ players, currentRound, gameMode }: ScoreboardProps) => {
+const Scoreboard = ({ players, currentRound, currentLeg, totalLegs, gameMode }: ScoreboardProps) => {
   return (
     <div className="glass-surface rounded-lg p-4 space-y-4">
       {/* Header */}
