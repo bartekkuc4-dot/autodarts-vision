@@ -112,6 +112,12 @@ const GameScreen = ({
     setDetections([]);
   }, [resetGame]);
 
+  // Compute last round score per player from roundHistory
+  const lastRoundScores = state.players.map((p) => {
+    const entries = state.roundHistory.filter((e) => e.playerName === p.name && !e.bust);
+    return entries.length > 0 ? entries[entries.length - 1].totalPoints : null;
+  });
+
   const scoreboardPlayers = state.players.map((p, i) => ({
     name: p.name,
     score: p.score,
@@ -120,6 +126,7 @@ const GameScreen = ({
     isActive: i === state.activePlayerIndex,
     totalThrows: p.totalThrows,
     totalPoints: config.startingScore - p.score + p.roundThrows.reduce((s, t) => s + t.points, 0),
+    lastRoundScore: lastRoundScores[i],
   }));
 
   const modeLabel = config.mode + (config.doubleOut ? " Double Out" : "");

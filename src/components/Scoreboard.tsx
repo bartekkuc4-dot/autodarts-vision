@@ -7,6 +7,7 @@ interface Player {
   throws: number[];
   isActive: boolean;
   totalThrows: number;
+  lastRoundScore: number | null;
   totalPoints: number;
 }
 
