@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Target, Users, Play, Plus, Minus, Trophy, Zap, CircleDot } from "lucide-react";
+import { Target, Users, Play, Plus, Minus, Trophy, Zap, CircleDot, SlidersHorizontal } from "lucide-react";
 
 export interface GameConfig {
   mode: string;
@@ -21,6 +21,7 @@ const GAME_MODES: GameMode[] = [
   { label: "501", score: 501, description: "Klasyk turniejowy", icon: <Trophy className="w-5 h-5" />, doubleOut: true },
   { label: "701", score: 701, description: "Dłuższa rozgrywka", icon: <Target className="w-5 h-5" />, doubleOut: true },
   { label: "Cricket", score: 0, description: "Zamykaj segmenty", icon: <CircleDot className="w-5 h-5" />, doubleOut: false },
+  { label: "Własne", score: 301, description: "Ustaw własny wynik", icon: <SlidersHorizontal className="w-5 h-5" />, doubleOut: false },
 ];
 
 interface GameSetupProps {
@@ -30,6 +31,7 @@ interface GameSetupProps {
 const GameSetup = ({ onStart }: GameSetupProps) => {
   const [selectedMode, setSelectedMode] = useState(1); // default 501
   const [doubleOut, setDoubleOut] = useState(true);
+  const [customScore, setCustomScore] = useState(301);
   const [playerNames, setPlayerNames] = useState(["Gracz 1", "Gracz 2"]);
 
   const mode = GAME_MODES[selectedMode];
@@ -53,10 +55,12 @@ const GameSetup = ({ onStart }: GameSetupProps) => {
   };
 
   const handleStart = () => {
+    const isCustom = mode.label === "Własne";
+    const isCricket = mode.label === "Cricket";
     onStart({
-      mode: mode.label,
-      startingScore: mode.score,
-      doubleOut: mode.label === "Cricket" ? false : doubleOut,
+      mode: isCustom ? `Custom ${customScore}` : mode.label,
+      startingScore: isCustom ? customScore : mode.score,
+      doubleOut: isCricket ? false : doubleOut,
       playerNames,
     });
   };
@@ -80,7 +84,7 @@ const GameSetup = ({ onStart }: GameSetupProps) => {
           <label className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground">
             Tryb gry
           </label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {GAME_MODES.map((m, i) => (
               <button
                 key={m.label}
@@ -109,6 +113,29 @@ const GameSetup = ({ onStart }: GameSetupProps) => {
             ))}
           </div>
         </div>
+
+        {/* Custom score slider */}
+        {mode.label === "Własne" && (
+          <div className="glass-surface rounded-lg p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-display font-semibold text-foreground">Wynik startowy</p>
+              <span className="font-display text-lg font-bold text-primary neon-text-glow tabular-nums">{customScore}</span>
+            </div>
+            <input
+              type="range"
+              min={101}
+              max={901}
+              step={1}
+              value={customScore}
+              onChange={(e) => setCustomScore(Number(e.target.value))}
+              className="w-full h-2 rounded-full appearance-none cursor-pointer bg-secondary accent-primary [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-lg"
+            />
+            <div className="flex justify-between text-[10px] text-muted-foreground font-body">
+              <span>101</span>
+              <span>901</span>
+            </div>
+          </div>
+        )}
 
         {/* Double Out toggle (only for X01 modes) */}
         {mode.label !== "Cricket" && (
