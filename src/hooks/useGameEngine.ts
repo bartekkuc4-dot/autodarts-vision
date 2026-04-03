@@ -1,27 +1,14 @@
 import { useCallback, useState } from "react";
 import type { GameConfig } from "@/components/GameSetup";
 
-export interface ThrowData {
-  segment: string;
-  points: number;
-}
-
-export interface RoundHistoryEntry {
-  leg: number;
-  round: number;
-  playerName: string;
-  throws: ThrowData[];
-  totalPoints: number;
-  bust: boolean;
-}
-
 export interface PlayerState {
   name: string;
   score: number;
   legsWon: number;
-  roundThrows: ThrowData[];
+  roundThrows: { segment: string; points: number }[];
   totalThrows: number;
   rounds: number;
+  lastRoundScore: number | null;
 }
 
 export interface GameState {
@@ -35,7 +22,6 @@ export interface GameState {
   config: GameConfig;
   lastAction: "throw" | "undo" | "next" | "leg_won" | null;
   bustMessage: string | null;
-  roundHistory: RoundHistoryEntry[];
 }
 
 export function useGameEngine(config: GameConfig) {
@@ -56,15 +42,6 @@ export function useGameEngine(config: GameConfig) {
           newScore === 1 ||
           (newScore === 0 && prev.config.doubleOut && !isDouble)
         ) {
-          const bustEntry: RoundHistoryEntry = {
-            leg: prev.currentLeg,
-            round: prev.currentRound,
-            playerName: player.name,
-            throws: [...player.roundThrows, { segment, points }],
-            totalPoints: player.roundThrows.reduce((s, t) => s + t.points, 0) + points,
-            bust: true,
-          };
-
           const revertedPlayer: PlayerState = {
             ...player,
             score: player.score + player.roundThrows.reduce((s, t) => s + t.points, 0),
@@ -85,7 +62,6 @@ export function useGameEngine(config: GameConfig) {
             lastAction: "throw",
             bustMessage: `BUST! ${player.name} wraca do ${revertedPlayer.score}`,
             legWinner: null,
-            roundHistory: [...prev.roundHistory, bustEntry],
           };
         }
 
@@ -102,36 +78,58 @@ export function useGameEngine(config: GameConfig) {
 
         // Leg won
         if (newScore === 0) {
-          const legEntry: RoundHistoryEntry = {
-            leg: prev.currentLeg, round: prev.currentRound,
-            playerName: player.name, throws: updatedPlayer.roundThrows,
-            totalPoints: updatedPlayer.roundThrows.reduce((s, t) => s + t.points, 0), bust: false,
-          };
           const legPlayer = { ...updatedPlayer, legsWon: updatedPlayer.legsWon + 1, roundThrows: [] };
           players[prev.activePlayerIndex] = legPlayer;
-          const newHistory = [...prev.roundHistory, legEntry];
 
+          // Check if match won
           if (legPlayer.legsWon >= prev.totalLegs) {
-            return { ...prev, players, winner: legPlayer.name, legWinner: legPlayer.name, lastAction: "leg_won", bustMessage: null, roundHistory: newHistory };
+            return {
+              ...prev,
+              players,
+              winner: legPlayer.name,
+              legWinner: legPlayer.name,
+              lastAction: "leg_won",
+              bustMessage: null,
+            };
           }
 
-          const resetPlayers = players.map((p) => ({ ...p, score: prev.config.startingScore, roundThrows: [] }));
-          return { ...prev, players: resetPlayers, activePlayerIndex: 0, currentRound: 1, currentLeg: prev.currentLeg + 1, legWinner: legPlayer.name, lastAction: "leg_won", bustMessage: null, winner: null, roundHistory: newHistory };
+          // Start next leg — reset scores
+          const resetPlayers = players.map((p) => ({
+            ...p,
+            score: prev.config.startingScore,
+            roundThrows: [],
+          }));
+
+          return {
+            ...prev,
+            players: resetPlayers,
+            activePlayerIndex: 0,
+            currentRound: 1,
+            currentLeg: prev.currentLeg + 1,
+            legWinner: legPlayer.name,
+            lastAction: "leg_won",
+            bustMessage: null,
+            winner: null,
+          };
         }
 
         // Auto-advance after 3 throws
         if (updatedPlayer.roundThrows.length >= 3) {
-          const roundEntry: RoundHistoryEntry = {
-            leg: prev.currentLeg, round: prev.currentRound,
-            playerName: player.name, throws: updatedPlayer.roundThrows,
-            totalPoints: updatedPlayer.roundThrows.reduce((s, t) => s + t.points, 0), bust: false,
-          };
-          const finalPlayer = { ...updatedPlayer, roundThrows: [], rounds: updatedPlayer.rounds + 1 };
+          const roundScore = updatedPlayer.roundThrows.reduce((s, t) => s + t.points, 0);
+          const finalPlayer = { ...updatedPlayer, roundThrows: [], rounds: updatedPlayer.rounds + 1, lastRoundScore: roundScore };
           players[prev.activePlayerIndex] = finalPlayer;
           const nextIdx = (prev.activePlayerIndex + 1) % players.length;
           const nextRound = nextIdx === 0 ? prev.currentRound + 1 : prev.currentRound;
 
-          return { ...prev, players, activePlayerIndex: nextIdx, currentRound: nextRound, lastAction: "throw", bustMessage: null, legWinner: null, roundHistory: [...prev.roundHistory, roundEntry] };
+          return {
+            ...prev,
+            players,
+            activePlayerIndex: nextIdx,
+            currentRound: nextRound,
+            lastAction: "throw",
+            bustMessage: null,
+            legWinner: null,
+          };
         }
 
         return { ...prev, players, lastAction: "throw", bustMessage: null, legWinner: null };
@@ -166,12 +164,8 @@ export function useGameEngine(config: GameConfig) {
       if (prev.winner) return prev;
 
       const player = prev.players[prev.activePlayerIndex];
-      const roundEntry: RoundHistoryEntry = {
-        leg: prev.currentLeg, round: prev.currentRound,
-        playerName: player.name, throws: [...player.roundThrows],
-        totalPoints: player.roundThrows.reduce((s, t) => s + t.points, 0), bust: false,
-      };
-      const finalPlayer = { ...player, roundThrows: [], rounds: player.rounds + 1 };
+      const roundScore = player.roundThrows.reduce((s, t) => s + t.points, 0);
+      const finalPlayer = { ...player, roundThrows: [], rounds: player.rounds + 1, lastRoundScore: roundScore };
       const players = [...prev.players];
       players[prev.activePlayerIndex] = finalPlayer;
 
@@ -186,7 +180,6 @@ export function useGameEngine(config: GameConfig) {
         lastAction: "next",
         bustMessage: null,
         legWinner: null,
-        roundHistory: player.roundThrows.length > 0 ? [...prev.roundHistory, roundEntry] : prev.roundHistory,
       };
     });
   }, []);
@@ -207,6 +200,7 @@ function initState(config: GameConfig): GameState {
       roundThrows: [],
       totalThrows: 0,
       rounds: 0,
+      lastRoundScore: null,
     })),
     activePlayerIndex: 0,
     currentRound: 1,
@@ -217,6 +211,5 @@ function initState(config: GameConfig): GameState {
     config,
     lastAction: null,
     bustMessage: null,
-    roundHistory: [],
   };
 }

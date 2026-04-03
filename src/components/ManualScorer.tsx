@@ -20,21 +20,18 @@ const ManualScorer = ({ onScore, playerName }: ManualScorerProps) => {
   const handleSubmit = () => {
     const val = parseInt(input, 10);
     if (isNaN(val) || val < 0) return;
-    // We submit as a single "score entry" — segment label is the raw number
     onScore(`${val}`, val);
     setInput("");
   };
 
   return (
     <div className="space-y-3">
-      {/* "It's your turn" label */}
       {playerName && (
         <p className="font-display text-sm font-bold uppercase tracking-wider text-primary">
           Twoja kolej, {playerName}!
         </p>
       )}
 
-      {/* Input + Submit row */}
       <div className="flex items-center gap-2 bg-secondary/60 rounded-full p-1.5 pl-4">
         <input
           type="text"
@@ -53,7 +50,6 @@ const ManualScorer = ({ onScore, playerName }: ManualScorerProps) => {
         </button>
       </div>
 
-      {/* Numpad grid */}
       <div className="grid grid-cols-3 divide-x divide-y divide-border/30 border border-border/30 rounded-lg overflow-hidden">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
           <button
@@ -64,7 +60,6 @@ const ManualScorer = ({ onScore, playerName }: ManualScorerProps) => {
             {n}
           </button>
         ))}
-        {/* Bottom row: undo, 0, empty */}
         <button
           onClick={handleBackspace}
           className="py-4 flex items-center justify-center hover:bg-secondary/60 active:bg-secondary transition-colors"

@@ -3,12 +3,10 @@ import Header from "@/components/Header";
 import CameraView from "@/components/CameraView";
 import Scoreboard from "@/components/Scoreboard";
 import GameControls from "@/components/GameControls";
-import DetectionLog from "@/components/DetectionLog";
+import SettingsPanel from "@/components/SettingsPanel";
 import GameSetup, { type GameConfig } from "@/components/GameSetup";
 import ManualScorer from "@/components/ManualScorer";
-import RoundHistory from "@/components/RoundHistory";
 import WinnerOverlay from "@/components/WinnerOverlay";
-import SettingsPanel from "@/components/SettingsPanel";
 import { useGameEngine } from "@/hooks/useGameEngine";
 import {
   playHitSound,
@@ -20,13 +18,7 @@ import {
   announceNextPlayer,
 } from "@/lib/sounds";
 
-interface Detection {
-  id: number;
-  segment: string;
-  score: number;
-  confidence: number;
-  timestamp: string;
-}
+
 
 const GameScreen = ({
   config,
@@ -36,7 +28,6 @@ const GameScreen = ({
   onNewGame: () => void;
 }) => {
   const { state, addThrow, undo, nextPlayer, resetGame } = useGameEngine(config);
-  const [detections, setDetections] = useState<Detection[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const prevActiveIdx = useRef(state.activePlayerIndex);
   const prevWinner = useRef(state.winner);
@@ -95,25 +86,18 @@ const GameScreen = ({
         announceThrow(segment, points, Math.max(0, newScore));
       }
 
-      const now = new Date();
-      const ts = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
-      setDetections((prev) => [
-        { id: Date.now(), segment, score: points, confidence: 1.0, timestamp: ts },
-        ...prev,
-      ]);
     },
     [addThrow, state.players, state.activePlayerIndex, config.doubleOut]
   );
 
   const handleUndo = useCallback(() => {
     undo();
-    setDetections((prev) => prev.slice(1));
   }, [undo]);
 
   const handlePlayAgain = useCallback(() => {
     resetGame();
-    setDetections([]);
   }, [resetGame]);
+
 
   const scoreboardPlayers = state.players.map((p, i) => ({
     name: p.name,
@@ -123,6 +107,7 @@ const GameScreen = ({
     isActive: i === state.activePlayerIndex,
     totalThrows: p.totalThrows,
     totalPoints: config.startingScore - p.score + p.roundThrows.reduce((s, t) => s + t.points, 0),
+    lastRoundScore: p.lastRoundScore,
   }));
 
   const modeLabel = config.mode + (config.doubleOut ? " Double Out" : "");
@@ -166,8 +151,7 @@ const GameScreen = ({
           onNewGame={onNewGame}
           onSettings={() => setShowSettings(true)}
         />
-        <DetectionLog detections={detections} />
-        <RoundHistory history={state.roundHistory} playerNames={config.playerNames} />
+        
       </main>
 
       {state.winner && (
