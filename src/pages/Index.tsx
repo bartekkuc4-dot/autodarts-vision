@@ -47,6 +47,22 @@ const GameScreen = ({
     }
     prevWinner.current = state.winner;
 
+    // Leg won (but not match won)
+    if (state.legWinner && !state.winner && state.lastAction === "leg_won") {
+      playHitSound(60);
+      // Use speech to announce leg win
+      setTimeout(() => {
+        const synth = window.speechSynthesis;
+        if (synth) {
+          synth.cancel();
+          const u = new SpeechSynthesisUtterance(`${state.legWinner} wygrywa leg ${state.currentLeg - 1}!`);
+          u.lang = "pl-PL";
+          u.rate = 1.0;
+          synth.speak(u);
+        }
+      }, 200);
+    }
+
     // Bust
     if (state.bustMessage && state.lastAction === "throw") {
       playBustSound();
@@ -54,7 +70,7 @@ const GameScreen = ({
     }
 
     // Player changed (not from bust – bust already announced)
-    if (state.activePlayerIndex !== prevActiveIdx.current && !state.bustMessage && !state.winner) {
+    if (state.activePlayerIndex !== prevActiveIdx.current && !state.bustMessage && !state.winner && state.lastAction !== "leg_won") {
       announceNextPlayer(state.players[state.activePlayerIndex].name);
     }
     prevActiveIdx.current = state.activePlayerIndex;
@@ -99,8 +115,11 @@ const GameScreen = ({
   const scoreboardPlayers = state.players.map((p, i) => ({
     name: p.name,
     score: p.score,
+    legsWon: p.legsWon,
     throws: p.roundThrows.map((t) => t.points),
     isActive: i === state.activePlayerIndex,
+    totalThrows: p.totalThrows,
+    totalPoints: config.startingScore - p.score + p.roundThrows.reduce((s, t) => s + t.points, 0),
   }));
 
   const modeLabel = config.mode + (config.doubleOut ? " Double Out" : "");
@@ -121,10 +140,21 @@ const GameScreen = ({
           </div>
         )}
 
+        {/* Leg won message */}
+        {state.legWinner && !state.winner && (
+          <div className="rounded-lg border border-primary/40 bg-primary/10 px-4 py-2.5 text-center animate-in zoom-in duration-300">
+            <span className="font-display text-sm font-bold uppercase tracking-wider text-primary">
+              🎯 {state.legWinner} wygrywa leg {state.currentLeg - 1}!
+            </span>
+          </div>
+        )}
+
         <ManualScorer onScore={handleScore} />
         <Scoreboard
           players={scoreboardPlayers}
           currentRound={state.currentRound}
+          currentLeg={state.currentLeg}
+          totalLegs={state.totalLegs}
           gameMode={modeLabel}
         />
         <GameControls
