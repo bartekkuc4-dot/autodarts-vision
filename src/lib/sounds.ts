@@ -7,8 +7,18 @@ const audioCtx = () => {
   }
   return (window as any).__dartAudioCtx as AudioContext;
 };
+let sfxEnabled = true;
+
+export function setSfxEnabled(enabled: boolean) {
+  sfxEnabled = enabled;
+}
+
+export function isSfxEnabled() {
+  return sfxEnabled;
+}
 
 function playTone(freq: number, duration: number, type: OscillatorType = "sine", volume = 0.3) {
+  if (!sfxEnabled) return;
   const ctx = audioCtx();
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
