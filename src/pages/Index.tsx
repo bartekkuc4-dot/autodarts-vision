@@ -92,7 +92,7 @@ const GameScreen = ({
 
   const handleUndo = useCallback(() => {
     undo();
-    setDetections((prev) => prev.slice(1));
+    setDetections([]); // keep for compat
   }, [undo]);
 
   const handlePlayAgain = useCallback(() => {
