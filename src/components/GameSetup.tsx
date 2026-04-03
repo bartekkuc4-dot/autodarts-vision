@@ -134,27 +134,25 @@ const GameSetup = ({ onStart }: GameSetupProps) => {
           </div>
         )}
 
-        {/* Double Out toggle (only for X01 modes) */}
-        {(
-          <div className="glass-surface rounded-lg p-4 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-display font-semibold text-foreground">Double Out</p>
-              <p className="text-[10px] text-muted-foreground font-body">Zakończ grę trafiając w podwójne pole</p>
-            </div>
-            <button
-              onClick={() => setDoubleOut(!doubleOut)}
-              className={`relative h-7 w-12 rounded-full transition-colors ${
-                doubleOut ? "bg-primary" : "bg-secondary"
-              }`}
-            >
-              <div
-                className={`absolute top-0.5 h-6 w-6 rounded-full bg-foreground shadow transition-transform ${
-                  doubleOut ? "translate-x-[22px]" : "translate-x-0.5"
-                }`}
-              />
-            </button>
+        {/* Double Out toggle */}
+        <div className="glass-surface rounded-lg p-4 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-display font-semibold text-foreground">Double Out</p>
+            <p className="text-[10px] text-muted-foreground font-body">Zakończ grę trafiając w podwójne pole</p>
           </div>
-        )}
+          <button
+            onClick={() => setDoubleOut(!doubleOut)}
+            className={`relative h-7 w-12 rounded-full transition-colors ${
+              doubleOut ? "bg-primary" : "bg-secondary"
+            }`}
+          >
+            <div
+              className={`absolute top-0.5 h-6 w-6 rounded-full bg-foreground shadow transition-transform ${
+                doubleOut ? "translate-x-[22px]" : "translate-x-0.5"
+              }`}
+            />
+          </button>
+        </div>
 
         {/* Players */}
         <div className="space-y-3">
