@@ -157,6 +157,33 @@ const GameSetup = ({ onStart }: GameSetupProps) => {
           </button>
         </div>
 
+        {/* Legs selector */}
+        <div className="glass-surface rounded-lg p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-display font-semibold text-foreground">Liczba legów</p>
+              <p className="text-[10px] text-muted-foreground font-body">Wygraj wymaganą liczbę legów</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setLegs(Math.max(1, legs - 1))}
+                disabled={legs <= 1}
+                className="glass-surface rounded-full p-1.5 transition-colors hover:bg-secondary disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <Minus className="w-3.5 h-3.5 text-muted-foreground" />
+              </button>
+              <span className="font-display text-lg font-bold text-primary tabular-nums w-8 text-center">{legs}</span>
+              <button
+                onClick={() => setLegs(Math.min(10, legs + 1))}
+                disabled={legs >= 10}
+                className="glass-surface rounded-full p-1.5 transition-colors hover:bg-secondary disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <Plus className="w-3.5 h-3.5 text-muted-foreground" />
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Players */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
