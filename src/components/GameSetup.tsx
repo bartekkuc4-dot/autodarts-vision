@@ -31,6 +31,7 @@ interface GameSetupProps {
 const GameSetup = ({ onStart }: GameSetupProps) => {
   const [selectedMode, setSelectedMode] = useState(1); // default 501
   const [doubleOut, setDoubleOut] = useState(true);
+  const [customScore, setCustomScore] = useState(301);
   const [playerNames, setPlayerNames] = useState(["Gracz 1", "Gracz 2"]);
 
   const mode = GAME_MODES[selectedMode];
