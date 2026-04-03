@@ -55,10 +55,12 @@ const GameSetup = ({ onStart }: GameSetupProps) => {
   };
 
   const handleStart = () => {
+    const isCustom = mode.label === "Własne";
+    const isCricket = mode.label === "Cricket";
     onStart({
-      mode: mode.label,
-      startingScore: mode.score,
-      doubleOut: mode.label === "Cricket" ? false : doubleOut,
+      mode: isCustom ? `Custom ${customScore}` : mode.label,
+      startingScore: isCustom ? customScore : mode.score,
+      doubleOut: isCricket ? false : doubleOut,
       playerNames,
     });
   };
