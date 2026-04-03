@@ -198,6 +198,7 @@ function initState(config: GameConfig): GameState {
       roundThrows: [],
       totalThrows: 0,
       rounds: 0,
+      lastRoundScore: null,
     })),
     activePlayerIndex: 0,
     currentRound: 1,

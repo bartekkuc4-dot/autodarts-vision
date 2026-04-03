@@ -112,11 +112,6 @@ const GameScreen = ({
     setDetections([]);
   }, [resetGame]);
 
-  // Compute last round score per player from roundHistory
-  const lastRoundScores = state.players.map((p) => {
-    const entries = state.roundHistory.filter((e) => e.playerName === p.name && !e.bust);
-    return entries.length > 0 ? entries[entries.length - 1].totalPoints : null;
-  });
 
   const scoreboardPlayers = state.players.map((p, i) => ({
     name: p.name,
