@@ -166,6 +166,11 @@ export function useGameEngine(config: GameConfig) {
       if (prev.winner) return prev;
 
       const player = prev.players[prev.activePlayerIndex];
+      const roundEntry: RoundHistoryEntry = {
+        leg: prev.currentLeg, round: prev.currentRound,
+        playerName: player.name, throws: [...player.roundThrows],
+        totalPoints: player.roundThrows.reduce((s, t) => s + t.points, 0), bust: false,
+      };
       const finalPlayer = { ...player, roundThrows: [], rounds: player.rounds + 1 };
       const players = [...prev.players];
       players[prev.activePlayerIndex] = finalPlayer;
@@ -181,6 +186,7 @@ export function useGameEngine(config: GameConfig) {
         lastAction: "next",
         bustMessage: null,
         legWinner: null,
+        roundHistory: player.roundThrows.length > 0 ? [...prev.roundHistory, roundEntry] : prev.roundHistory,
       };
     });
   }, []);
