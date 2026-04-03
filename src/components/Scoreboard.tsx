@@ -1,4 +1,4 @@
-import { Trophy, RotateCcw } from "lucide-react";
+import { Trophy, TrendingUp } from "lucide-react";
 
 interface Player {
   name: string;
