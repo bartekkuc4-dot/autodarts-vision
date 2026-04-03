@@ -4,11 +4,7 @@ import CameraView from "@/components/CameraView";
 import Scoreboard from "@/components/Scoreboard";
 import GameControls from "@/components/GameControls";
 import DetectionLog from "@/components/DetectionLog";
-
-const MOCK_PLAYERS = [
-  { name: "Gracz 1", score: 301, throws: [20, 57, 18], isActive: true },
-  { name: "Gracz 2", score: 395, throws: [5], isActive: false },
-];
+import GameSetup, { type GameConfig } from "@/components/GameSetup";
 
 const MOCK_DETECTIONS = [
   { id: 1, segment: "T20", score: 60, confidence: 0.94, timestamp: "12:04" },
@@ -17,13 +13,29 @@ const MOCK_DETECTIONS = [
 ];
 
 const Index = () => {
-  const [players] = useState(MOCK_PLAYERS);
+  const [gameConfig, setGameConfig] = useState<GameConfig | null>(null);
   const [detections] = useState(MOCK_DETECTIONS);
 
-  const handleUndo = () => {};
-  const handleNextPlayer = () => {};
-  const handleNewGame = () => {};
-  const handleSettings = () => {};
+  const handleStartGame = (config: GameConfig) => {
+    setGameConfig(config);
+  };
+
+  const handleNewGame = () => {
+    setGameConfig(null);
+  };
+
+  if (!gameConfig) {
+    return <GameSetup onStart={handleStartGame} />;
+  }
+
+  const players = gameConfig.playerNames.map((name, i) => ({
+    name,
+    score: gameConfig.startingScore,
+    throws: [] as number[],
+    isActive: i === 0,
+  }));
+
+  const modeLabel = gameConfig.mode + (gameConfig.doubleOut ? " Double Out" : "");
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -31,12 +43,12 @@ const Index = () => {
 
       <main className="flex-1 p-3 space-y-3 max-w-lg mx-auto w-full">
         <CameraView />
-        <Scoreboard players={players} currentRound={3} gameMode="501 Double Out" />
+        <Scoreboard players={players} currentRound={1} gameMode={modeLabel} />
         <GameControls
-          onUndo={handleUndo}
-          onNextPlayer={handleNextPlayer}
+          onUndo={() => {}}
+          onNextPlayer={() => {}}
           onNewGame={handleNewGame}
-          onSettings={handleSettings}
+          onSettings={() => {}}
         />
         <DetectionLog detections={detections} />
       </main>
