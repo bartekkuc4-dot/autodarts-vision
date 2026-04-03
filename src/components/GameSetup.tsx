@@ -5,6 +5,7 @@ export interface GameConfig {
   mode: string;
   startingScore: number;
   doubleOut: boolean;
+  legs: number;
   playerNames: string[];
 }
 
