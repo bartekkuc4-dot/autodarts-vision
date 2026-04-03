@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Target, Users, Play, Plus, Minus, Trophy, Zap, CircleDot, SlidersHorizontal } from "lucide-react";
+import { Target, Users, Play, Plus, Minus, Trophy, Zap, SlidersHorizontal } from "lucide-react";
 
 export interface GameConfig {
   mode: string;
@@ -19,7 +19,6 @@ interface GameMode {
 const GAME_MODES: GameMode[] = [
   { label: "301", score: 301, description: "Szybka gra", icon: <Zap className="w-5 h-5" />, doubleOut: false },
   { label: "501", score: 501, description: "Klasyk turniejowy", icon: <Trophy className="w-5 h-5" />, doubleOut: true },
-  { label: "Cricket", score: 0, description: "Zamykaj segmenty", icon: <CircleDot className="w-5 h-5" />, doubleOut: false },
   { label: "Własne", score: 301, description: "Ustaw własny wynik", icon: <SlidersHorizontal className="w-5 h-5" />, doubleOut: false },
 ];
 
@@ -55,11 +54,10 @@ const GameSetup = ({ onStart }: GameSetupProps) => {
 
   const handleStart = () => {
     const isCustom = mode.label === "Własne";
-    const isCricket = mode.label === "Cricket";
     onStart({
       mode: isCustom ? `Custom ${customScore}` : mode.label,
       startingScore: isCustom ? customScore : mode.score,
-      doubleOut: isCricket ? false : doubleOut,
+      doubleOut,
       playerNames,
     });
   };
@@ -136,27 +134,25 @@ const GameSetup = ({ onStart }: GameSetupProps) => {
           </div>
         )}
 
-        {/* Double Out toggle (only for X01 modes) */}
-        {mode.label !== "Cricket" && (
-          <div className="glass-surface rounded-lg p-4 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-display font-semibold text-foreground">Double Out</p>
-              <p className="text-[10px] text-muted-foreground font-body">Zakończ grę trafiając w podwójne pole</p>
-            </div>
-            <button
-              onClick={() => setDoubleOut(!doubleOut)}
-              className={`relative h-7 w-12 rounded-full transition-colors ${
-                doubleOut ? "bg-primary" : "bg-secondary"
-              }`}
-            >
-              <div
-                className={`absolute top-0.5 h-6 w-6 rounded-full bg-foreground shadow transition-transform ${
-                  doubleOut ? "translate-x-[22px]" : "translate-x-0.5"
-                }`}
-              />
-            </button>
+        {/* Double Out toggle */}
+        <div className="glass-surface rounded-lg p-4 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-display font-semibold text-foreground">Double Out</p>
+            <p className="text-[10px] text-muted-foreground font-body">Zakończ grę trafiając w podwójne pole</p>
           </div>
-        )}
+          <button
+            onClick={() => setDoubleOut(!doubleOut)}
+            className={`relative h-7 w-12 rounded-full transition-colors ${
+              doubleOut ? "bg-primary" : "bg-secondary"
+            }`}
+          >
+            <div
+              className={`absolute top-0.5 h-6 w-6 rounded-full bg-foreground shadow transition-transform ${
+                doubleOut ? "translate-x-[22px]" : "translate-x-0.5"
+              }`}
+            />
+          </button>
+        </div>
 
         {/* Players */}
         <div className="space-y-3">
