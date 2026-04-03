@@ -126,6 +126,8 @@ const GameScreen = ({
         <Scoreboard
           players={scoreboardPlayers}
           currentRound={state.currentRound}
+          currentLeg={state.currentLeg}
+          totalLegs={state.totalLegs}
           gameMode={modeLabel}
         />
         <GameControls
