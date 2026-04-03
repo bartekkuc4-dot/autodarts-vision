@@ -5,23 +5,37 @@ import Scoreboard from "@/components/Scoreboard";
 import GameControls from "@/components/GameControls";
 import DetectionLog from "@/components/DetectionLog";
 import GameSetup, { type GameConfig } from "@/components/GameSetup";
+import ManualScorer from "@/components/ManualScorer";
 
-const MOCK_DETECTIONS = [
-  { id: 1, segment: "T20", score: 60, confidence: 0.94, timestamp: "12:04" },
-  { id: 2, segment: "S19", score: 19, confidence: 0.87, timestamp: "12:03" },
-  { id: 3, segment: "D16", score: 32, confidence: 0.91, timestamp: "12:02" },
-];
+interface Detection {
+  id: number;
+  segment: string;
+  score: number;
+  confidence: number;
+  timestamp: string;
+}
 
 const Index = () => {
   const [gameConfig, setGameConfig] = useState<GameConfig | null>(null);
-  const [detections] = useState(MOCK_DETECTIONS);
+  const [detections, setDetections] = useState<Detection[]>([]);
 
   const handleStartGame = (config: GameConfig) => {
     setGameConfig(config);
+    setDetections([]);
   };
 
   const handleNewGame = () => {
     setGameConfig(null);
+    setDetections([]);
+  };
+
+  const handleManualScore = (segment: string, points: number) => {
+    const now = new Date();
+    const ts = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
+    setDetections((prev) => [
+      { id: Date.now(), segment, score: points, confidence: 1.0, timestamp: ts },
+      ...prev,
+    ]);
   };
 
   if (!gameConfig) {
@@ -43,6 +57,7 @@ const Index = () => {
 
       <main className="flex-1 p-3 space-y-3 max-w-lg mx-auto w-full">
         <CameraView />
+        <ManualScorer onScore={handleManualScore} />
         <Scoreboard players={players} currentRound={1} gameMode={modeLabel} />
         <GameControls
           onUndo={() => {}}
