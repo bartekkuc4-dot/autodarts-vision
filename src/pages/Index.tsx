@@ -37,6 +37,7 @@ const GameScreen = ({
 }) => {
   const { state, addThrow, undo, nextPlayer, resetGame } = useGameEngine(config);
   const [detections, setDetections] = useState<Detection[]>([]);
+  const [showSettings, setShowSettings] = useState(false);
   const prevActiveIdx = useRef(state.activePlayerIndex);
   const prevWinner = useRef(state.winner);
 
