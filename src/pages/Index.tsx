@@ -93,6 +93,8 @@ const GameScreen = ({
       {state.winner && (
         <WinnerOverlay
           winner={state.winner}
+          players={state.players}
+          startingScore={config.startingScore}
           onNewGame={onNewGame}
           onPlayAgain={handlePlayAgain}
         />
