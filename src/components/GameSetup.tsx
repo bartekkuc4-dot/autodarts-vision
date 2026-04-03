@@ -21,6 +21,7 @@ const GAME_MODES: GameMode[] = [
   { label: "501", score: 501, description: "Klasyk turniejowy", icon: <Trophy className="w-5 h-5" />, doubleOut: true },
   { label: "701", score: 701, description: "Dłuższa rozgrywka", icon: <Target className="w-5 h-5" />, doubleOut: true },
   { label: "Cricket", score: 0, description: "Zamykaj segmenty", icon: <CircleDot className="w-5 h-5" />, doubleOut: false },
+  { label: "Własne", score: 301, description: "Ustaw własny wynik", icon: <SlidersHorizontal className="w-5 h-5" />, doubleOut: false },
 ];
 
 interface GameSetupProps {
