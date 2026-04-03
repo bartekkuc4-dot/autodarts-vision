@@ -27,9 +27,16 @@ const Scoreboard = ({ players, currentRound, currentLeg, totalLegs, gameMode }: 
             {gameMode}
           </span>
         </div>
-        <span className="text-xs font-display font-semibold text-muted-foreground">
-          Runda {currentRound}
-        </span>
+        <div className="flex items-center gap-3">
+          {totalLegs > 1 && (
+            <span className="text-xs font-display font-semibold text-primary">
+              Leg {currentLeg}/{totalLegs}
+            </span>
+          )}
+          <span className="text-xs font-display font-semibold text-muted-foreground">
+            Runda {currentRound}
+          </span>
+        </div>
       </div>
 
       {/* Players */}
