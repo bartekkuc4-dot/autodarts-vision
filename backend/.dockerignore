@@ -1,0 +1,15 @@
+# Exclude from backend image build context
+.venv
+__pycache__
+*.pyc
+*.pyo
+
+# Model weights — mounted as volume at runtime, NOT baked into image
+# (allows swapping best.pt without rebuild)
+best.pt
+
+# Retraining data — mounted as named volume
+feedback/
+
+# Dev tools
+README.md

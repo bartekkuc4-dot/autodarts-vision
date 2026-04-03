@@ -22,3 +22,25 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# ── AutoDarts Vision ──────────────────────────────────────────────────────────
+
+# Environment variables (may contain secrets / token URLs)
+.env
+.env.*
+!.env.example
+
+# Python virtualenv
+backend/.venv
+backend/__pycache__/
+backend/*.pyc
+
+# Feedback retraining dataset (large binary files — keep local)
+backend/feedback/
+
+# Model weights (large binary — distribute separately)
+# Comment this line out if you want to version your best.pt in git
+backend/best.pt
+
+# Docker override files
+docker-compose.override.yml

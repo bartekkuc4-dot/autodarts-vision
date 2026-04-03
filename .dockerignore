@@ -1,0 +1,17 @@
+# Exclude from frontend image build context
+node_modules
+.git
+dist
+
+# Backend (has its own Dockerfile context)
+backend
+
+# Dev/test files
+*.log
+*.md
+.env
+.env.*
+!.env.example
+playwright-fixture.ts
+playwright.config.ts
+vitest.config.ts

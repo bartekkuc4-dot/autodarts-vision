@@ -1,32 +1,60 @@
 import { Camera, Video, VideoOff } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useMotionDetection,
+  type MotionConfig,
+  type MotionState,
+} from "@/hooks/useMotionDetection";
 
-const CameraView = () => {
-  const [isActive, setIsActive] = useState(false);
+// ─── Status badge config ───────────────────────────────────────────────────────
+const STATUS: Record<MotionState, { label: string; color: string; pulse: boolean }> = {
+  idle:     { label: "Czuwam",      color: "bg-emerald-500",  pulse: true  },
+  motion:   { label: "Ruch!",       color: "bg-yellow-400",   pulse: false },
+  cooldown: { label: "Analizuję…",  color: "bg-blue-400",     pulse: true  },
+};
+
+// ─── Props ────────────────────────────────────────────────────────────────────
+interface CameraViewProps {
+  /** Called with full-res base64 JPEG when a dart stabilises */
+  onFrame?: (base64: string) => void;
+  /** Set to false to pause motion detection without stopping the camera */
+  isDetectionActive?: boolean;
+  motionConfig?: Partial<MotionConfig>;
+  /** Notify parent when camera starts / stops */
+  onCameraActive?: (active: boolean) => void;
+}
+
+const CameraView = ({
+  onFrame,
+  isDetectionActive = true,
+  motionConfig,
+  onCameraActive,
+}: CameraViewProps) => {
+  const [isActive,   setIsActive]   = useState(false);
   const [isStarting, setIsStarting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const [error,      setError]      = useState<string | null>(null);
+
+  const videoRef  = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
+  // ── Camera control ──────────────────────────────────────────────────────────
   const stopCamera = useCallback(() => {
-    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
-
     if (videoRef.current) {
       videoRef.current.pause();
       videoRef.current.srcObject = null;
     }
-
     setIsActive(false);
     setIsStarting(false);
-  }, []);
+    onCameraActive?.(false);
+  }, [onCameraActive]);
 
   const startCamera = useCallback(async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
       setError("Ta przeglądarka nie obsługuje kamery.");
       return;
     }
-
     try {
       setIsStarting(true);
       setError(null);
@@ -35,42 +63,47 @@ const CameraView = () => {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: { ideal: "environment" },
-          width: { ideal: 1280 },
+          width:  { ideal: 1280 },
           height: { ideal: 960 },
         },
         audio: false,
       });
-
       streamRef.current = stream;
 
-      if (!videoRef.current) {
-        throw new Error("Brak elementu video.");
-      }
-
+      if (!videoRef.current) throw new Error("Brak elementu video.");
       videoRef.current.srcObject = stream;
       await videoRef.current.play();
 
       setIsActive(true);
+      onCameraActive?.(true);
     } catch (err) {
       stopCamera();
-
-      const message = err instanceof Error && err.name === "NotAllowedError"
-        ? "Dostęp do kamery został zablokowany. Zezwól na kamerę lub otwórz aplikację w nowej karcie."
-        : err instanceof Error && err.name === "NotFoundError"
+      const message =
+        err instanceof Error && err.name === "NotAllowedError"
+          ? "Dostęp do kamery został zablokowany."
+          : err instanceof Error && err.name === "NotFoundError"
           ? "Nie znaleziono kamery na tym urządzeniu."
           : "Nie udało się uruchomić kamery. Sprawdź uprawnienia przeglądarki.";
-
       console.error("Camera error:", err);
       setError(message);
     } finally {
       setIsStarting(false);
     }
-  }, [stopCamera]);
+  }, [stopCamera, onCameraActive]);
 
-  useEffect(() => {
-    return () => stopCamera();
-  }, [stopCamera]);
+  useEffect(() => () => stopCamera(), [stopCamera]);
 
+  // ── Motion detection ────────────────────────────────────────────────────────
+  const { motionState } = useMotionDetection({
+    videoRef,
+    isActive: isActive && isDetectionActive && Boolean(onFrame),
+    onFrame:  onFrame ?? (() => {}),
+    config:   motionConfig,
+  });
+
+  const status = STATUS[motionState];
+
+  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div className="relative w-full aspect-[4/3] overflow-hidden rounded-lg border border-border bg-muted/30">
       <video
@@ -81,6 +114,7 @@ const CameraView = () => {
         className={`absolute inset-0 h-full w-full object-cover ${isActive ? "block" : "hidden"}`}
       />
 
+      {/* Overlays when camera is active */}
       {isActive && (
         <>
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/60" />
@@ -91,27 +125,42 @@ const CameraView = () => {
           </div>
           <div className="pointer-events-none absolute inset-8 rounded-full border-2 border-primary/40 animate-pulse-neon" />
           <div className="pointer-events-none absolute inset-16 rounded-full border border-primary/20" />
+
+          {/* LIVE badge */}
           <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full px-3 py-1.5 glass-surface">
             <div className="h-2 w-2 rounded-full bg-primary animate-pulse-neon" />
-            <span className="text-xs font-display font-semibold uppercase tracking-wider text-primary">Live</span>
+            <span className="text-xs font-display font-semibold uppercase tracking-wider text-primary">
+              Live
+            </span>
           </div>
-          <div className="absolute right-4 top-4 rounded-full px-3 py-1.5 glass-surface">
-            <span className="text-xs font-display font-semibold uppercase tracking-wider text-muted-foreground">Wykrywanie...</span>
-          </div>
+
+          {/* Motion status badge — only when onFrame prop is wired */}
+          {onFrame && (
+            <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full px-3 py-1.5 glass-surface">
+              <div
+                className={`h-2 w-2 rounded-full ${status.color} ${status.pulse ? "animate-pulse" : ""}`}
+              />
+              <span className="text-xs font-display font-semibold uppercase tracking-wider text-muted-foreground">
+                {status.label}
+              </span>
+            </div>
+          )}
         </>
       )}
 
+      {/* Placeholder when inactive */}
       {!isActive && !error && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-secondary">
             <Camera className="h-10 w-10 text-muted-foreground" />
           </div>
           <p className="font-body text-sm text-muted-foreground">
-            {isStarting ? "Uruchamianie kamery..." : "Kliknij aby uruchomić kamerę"}
+            {isStarting ? "Uruchamianie kamery…" : "Kliknij aby uruchomić kamerę"}
           </p>
         </div>
       )}
 
+      {/* Error state */}
       {error && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6 text-center">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-destructive/20">
@@ -121,6 +170,7 @@ const CameraView = () => {
         </div>
       )}
 
+      {/* Toggle button */}
       <button
         onClick={isActive ? stopCamera : startCamera}
         disabled={isStarting}
@@ -135,7 +185,7 @@ const CameraView = () => {
           <>
             <Video className="h-4 w-4 text-primary" />
             <span className="text-sm font-display font-semibold text-primary">
-              {isStarting ? "Łączenie..." : "Uruchom kamerę"}
+              {isStarting ? "Łączenie…" : "Uruchom kamerę"}
             </span>
           </>
         )}

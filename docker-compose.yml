@@ -1,0 +1,67 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AutoDarts Vision — Docker Compose
+#
+# Usage:
+#   docker compose up --build          # first run
+#   docker compose up -d               # background after first build
+#   docker compose down                # stop
+#
+# Prerequisites:
+#   backend/best.pt must exist (model weights)
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Backend — FastAPI + YOLOv8 ──────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      # Model weights — mount read-only so you can swap best.pt without rebuild
+      - ./backend/best.pt:/app/best.pt:ro
+      # Feedback data — persist retraining images + JSONL across restarts
+      - feedback_data:/app/feedback
+    environment:
+      PYTHONUNBUFFERED: "1"
+    networks:
+      - internal
+    # Backend not exposed on host — accessible only via nginx proxy on /api
+    # Uncomment the lines below to expose port 8000 for direct API testing:
+    # ports:
+    #   - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 90s   # ultralytics loads slowly on first start
+      retries: 3
+
+  # ── Frontend — React (nginx) ────────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE: /api  # relative — works through ngrok/Cloudflare too
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - internal
+
+# ─────────────────────────────────────────────────────────────────────────────
+volumes:
+  feedback_data:
+    # To inspect feedback: docker compose run --rm backend ls /app/feedback/images
+    # To copy feedback out: docker cp autodarts-vision-backend-1:/app/feedback ./feedback_export
+
+networks:
+  internal:
+    driver: bridge

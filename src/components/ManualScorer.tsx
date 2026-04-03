@@ -4,10 +4,16 @@ import { Undo2 } from "lucide-react";
 interface ManualScorerProps {
   onScore: (segment: string, points: number) => void;
   playerName?: string;
+  /** Controlled open state — leave undefined to use internal state */
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-const ManualScorer = ({ onScore, playerName }: ManualScorerProps) => {
+const ManualScorer = ({ onScore, playerName, isOpen: controlledOpen, onOpenChange }: ManualScorerProps) => {
   const [input, setInput] = useState("");
+  const [localOpen, setLocalOpen] = useState(false);
+  const isOpen = controlledOpen ?? localOpen;
+  const setIsOpen = (v: boolean) => { setLocalOpen(v); onOpenChange?.(v); };
 
   const handleDigit = (d: string) => {
     if (input.length < 3) setInput((prev) => prev + d);
