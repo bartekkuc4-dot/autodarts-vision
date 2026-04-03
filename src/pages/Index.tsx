@@ -8,6 +8,7 @@ import GameSetup, { type GameConfig } from "@/components/GameSetup";
 import ManualScorer from "@/components/ManualScorer";
 import RoundHistory from "@/components/RoundHistory";
 import WinnerOverlay from "@/components/WinnerOverlay";
+import SettingsPanel from "@/components/SettingsPanel";
 import { useGameEngine } from "@/hooks/useGameEngine";
 import {
   playHitSound,
