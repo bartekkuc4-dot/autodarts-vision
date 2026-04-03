@@ -163,6 +163,8 @@ const GameScreen = ({
           onPlayAgain={handlePlayAgain}
         />
       )}
+
+      {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
     </div>
   );
 };
