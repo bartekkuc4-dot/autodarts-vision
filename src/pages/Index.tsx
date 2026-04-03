@@ -121,7 +121,7 @@ const GameScreen = ({
     isActive: i === state.activePlayerIndex,
     totalThrows: p.totalThrows,
     totalPoints: config.startingScore - p.score + p.roundThrows.reduce((s, t) => s + t.points, 0),
-    lastRoundScore: lastRoundScores[i],
+    lastRoundScore: p.lastRoundScore,
   }));
 
   const modeLabel = config.mode + (config.doubleOut ? " Double Out" : "");
