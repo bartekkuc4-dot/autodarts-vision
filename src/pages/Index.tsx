@@ -99,6 +99,7 @@ const GameScreen = ({
   const scoreboardPlayers = state.players.map((p, i) => ({
     name: p.name,
     score: p.score,
+    legsWon: p.legsWon,
     throws: p.roundThrows.map((t) => t.points),
     isActive: i === state.activePlayerIndex,
   }));
