@@ -47,6 +47,22 @@ const GameScreen = ({
     }
     prevWinner.current = state.winner;
 
+    // Leg won (but not match won)
+    if (state.legWinner && !state.winner && state.lastAction === "leg_won") {
+      playHitSound(60);
+      // Use speech to announce leg win
+      setTimeout(() => {
+        const synth = window.speechSynthesis;
+        if (synth) {
+          synth.cancel();
+          const u = new SpeechSynthesisUtterance(`${state.legWinner} wygrywa leg ${state.currentLeg - 1}!`);
+          u.lang = "pl-PL";
+          u.rate = 1.0;
+          synth.speak(u);
+        }
+      }, 200);
+    }
+
     // Bust
     if (state.bustMessage && state.lastAction === "throw") {
       playBustSound();
@@ -54,7 +70,7 @@ const GameScreen = ({
     }
 
     // Player changed (not from bust – bust already announced)
-    if (state.activePlayerIndex !== prevActiveIdx.current && !state.bustMessage && !state.winner) {
+    if (state.activePlayerIndex !== prevActiveIdx.current && !state.bustMessage && !state.winner && state.lastAction !== "leg_won") {
       announceNextPlayer(state.players[state.activePlayerIndex].name);
     }
     prevActiveIdx.current = state.activePlayerIndex;
