@@ -60,6 +60,7 @@ const GameSetup = ({ onStart }: GameSetupProps) => {
       mode: isCustom ? `Custom ${customScore}` : mode.label,
       startingScore: isCustom ? customScore : mode.score,
       doubleOut,
+      legs,
       playerNames,
     });
   };
