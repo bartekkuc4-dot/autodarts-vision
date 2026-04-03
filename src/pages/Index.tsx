@@ -149,7 +149,7 @@ const GameScreen = ({
           onUndo={handleUndo}
           onNextPlayer={nextPlayer}
           onNewGame={onNewGame}
-          onSettings={() => {}}
+          onSettings={() => setShowSettings(true)}
         />
         
       </main>
