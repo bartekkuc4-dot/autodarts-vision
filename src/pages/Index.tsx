@@ -138,6 +138,15 @@ const GameScreen = ({
           </div>
         )}
 
+        {/* Leg won message */}
+        {state.legWinner && !state.winner && (
+          <div className="rounded-lg border border-primary/40 bg-primary/10 px-4 py-2.5 text-center animate-in zoom-in duration-300">
+            <span className="font-display text-sm font-bold uppercase tracking-wider text-primary">
+              🎯 {state.legWinner} wygrywa leg {state.currentLeg - 1}!
+            </span>
+          </div>
+        )}
+
         <ManualScorer onScore={handleScore} />
         <Scoreboard
           players={scoreboardPlayers}
