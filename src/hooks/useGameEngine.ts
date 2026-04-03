@@ -217,5 +217,6 @@ function initState(config: GameConfig): GameState {
     config,
     lastAction: null,
     bustMessage: null,
+    roundHistory: [],
   };
 }
