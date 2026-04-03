@@ -170,7 +170,7 @@ const GameScreen = ({
           onNewGame={onNewGame}
           onSettings={() => {}}
         />
-        <DetectionLog detections={detections} />
+        
       </main>
 
       {state.winner && (
