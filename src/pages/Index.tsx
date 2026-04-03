@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import CameraView from "@/components/CameraView";
 import Scoreboard from "@/components/Scoreboard";
 import GameControls from "@/components/GameControls";
-
+import SettingsPanel from "@/components/SettingsPanel";
 import GameSetup, { type GameConfig } from "@/components/GameSetup";
 import ManualScorer from "@/components/ManualScorer";
 import WinnerOverlay from "@/components/WinnerOverlay";
