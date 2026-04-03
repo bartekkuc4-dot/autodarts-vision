@@ -3,6 +3,7 @@ import { Trophy, RotateCcw } from "lucide-react";
 interface Player {
   name: string;
   score: number;
+  legsWon: number;
   throws: number[];
   isActive: boolean;
 }
@@ -10,10 +11,12 @@ interface Player {
 interface ScoreboardProps {
   players: Player[];
   currentRound: number;
+  currentLeg: number;
+  totalLegs: number;
   gameMode: string;
 }
 
-const Scoreboard = ({ players, currentRound, gameMode }: ScoreboardProps) => {
+const Scoreboard = ({ players, currentRound, currentLeg, totalLegs, gameMode }: ScoreboardProps) => {
   return (
     <div className="glass-surface rounded-lg p-4 space-y-4">
       {/* Header */}
@@ -24,9 +27,16 @@ const Scoreboard = ({ players, currentRound, gameMode }: ScoreboardProps) => {
             {gameMode}
           </span>
         </div>
-        <span className="text-xs font-display font-semibold text-muted-foreground">
-          Runda {currentRound}
-        </span>
+        <div className="flex items-center gap-3">
+          {totalLegs > 1 && (
+            <span className="text-xs font-display font-semibold text-primary">
+              Leg {currentLeg}/{totalLegs}
+            </span>
+          )}
+          <span className="text-xs font-display font-semibold text-muted-foreground">
+            Runda {currentRound}
+          </span>
+        </div>
       </div>
 
       {/* Players */}
@@ -41,11 +51,18 @@ const Scoreboard = ({ players, currentRound, gameMode }: ScoreboardProps) => {
             }`}
           >
             <div className="flex items-center justify-between mb-2">
-              <span className={`font-display font-bold text-sm uppercase tracking-wide ${
-                player.isActive ? "text-primary neon-text-glow" : "text-secondary-foreground"
-              }`}>
-                {player.name}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className={`font-display font-bold text-sm uppercase tracking-wide ${
+                  player.isActive ? "text-primary neon-text-glow" : "text-secondary-foreground"
+                }`}>
+                  {player.name}
+                </span>
+                {totalLegs > 1 && (
+                  <span className="text-[10px] font-display font-bold text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
+                    {player.legsWon}L
+                  </span>
+                )}
+              </div>
               <span className={`font-display font-bold text-3xl tabular-nums ${
                 player.isActive ? "text-foreground animate-score-pop" : "text-secondary-foreground"
               }`}>
