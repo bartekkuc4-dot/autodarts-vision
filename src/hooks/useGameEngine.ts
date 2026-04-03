@@ -8,6 +8,7 @@ export interface PlayerState {
   roundThrows: { segment: string; points: number }[];
   totalThrows: number;
   rounds: number;
+  lastRoundScore: number | null;
 }
 
 export interface GameState {
