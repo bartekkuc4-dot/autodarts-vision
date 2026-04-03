@@ -115,7 +115,8 @@ export function useGameEngine(config: GameConfig) {
 
         // Auto-advance after 3 throws
         if (updatedPlayer.roundThrows.length >= 3) {
-          const finalPlayer = { ...updatedPlayer, roundThrows: [], rounds: updatedPlayer.rounds + 1 };
+          const roundScore = updatedPlayer.roundThrows.reduce((s, t) => s + t.points, 0);
+          const finalPlayer = { ...updatedPlayer, roundThrows: [], rounds: updatedPlayer.rounds + 1, lastRoundScore: roundScore };
           players[prev.activePlayerIndex] = finalPlayer;
           const nextIdx = (prev.activePlayerIndex + 1) % players.length;
           const nextRound = nextIdx === 0 ? prev.currentRound + 1 : prev.currentRound;
