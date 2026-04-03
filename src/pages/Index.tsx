@@ -165,6 +165,7 @@ const GameScreen = ({
           onSettings={() => {}}
         />
         <DetectionLog detections={detections} />
+        <RoundHistory history={state.roundHistory} playerNames={config.playerNames} />
       </main>
 
       {state.winner && (
